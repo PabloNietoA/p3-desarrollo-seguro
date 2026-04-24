@@ -1,4 +1,5 @@
 # NovaCorp — Company Management Platform
+COMMIT DE PRUEBA
 
 **NovaCorp Platform** is an internal web application for managing companies and their associated comments. It supports three roles (`admin`, `owner`, `user`) with different access levels.
 
