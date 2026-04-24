@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Admin: Companies — NovaCorp{% endblock %}
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item active">Admin: Companies</li>
+    </ol>
+</nav>
+{% endblock %}
+{% block content %}
+
+<h2><i class="bi bi-gear"></i> Company Management</h2>
+
+<div class="card mt-3 mb-4">
+    <div class="card-header">Add New Company</div>
+    <div class="card-body">
+        <form method="post" action="/admin/companies/add" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Company Name</label>
+                <input class="form-control" type="text" name="company_name" required>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Owner</label>
+                <input class="form-control" type="text" name="owner" required>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button class="btn btn-success" type="submit" onclick="return confirm('Create this company?');">
+                    <i class="bi bi-plus-circle"></i> Create
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">All Companies</div>
+    <div class="table-responsive">
+        <table class="table table-striped mb-0">
+            <thead>
+                <tr><th>Name</th><th>Owner</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                {% for company in companies %}
+                <tr>
+                    <td>
+                        <a href="/companies/{{ company['id'] }}" class="text-decoration-none">
+                            {{ company['name']|safe }}
+                        </a>
+                    </td>
+                    <td>{{ company['owner'] }}</td>
+                    <td>
+                        <form method="post" action="/admin/companies/delete" class="d-inline" onsubmit="return confirm('Delete this company?');">
+                            <input type="hidden" name="company" value="{{ company['id'] }}">
+                            <button class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

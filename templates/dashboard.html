@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — NovaCorp{% endblock %}
+
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-speedometer2"></i> Dashboard</h2>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card text-bg-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-0">Companies</h6>
+                        <h2 class="mb-0 mt-1">{{ total_companies }}</h2>
+                    </div>
+                    <i class="bi bi-buildings" style="font-size: 2.5rem; opacity: .5;"></i>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <a href="/companies" class="text-white"><i class="bi bi-arrow-right"></i> View all</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-bg-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-0">Comments</h6>
+                        <h2 class="mb-0 mt-1">{{ total_comments }}</h2>
+                    </div>
+                    <i class="bi bi-chat-dots" style="font-size: 2.5rem; opacity: .5;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-bg-dark">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-0">Your Role</h6>
+                        <h2 class="mb-0 mt-1 text-capitalize">{{ session['role'] }}</h2>
+                    </div>
+                    <i class="bi bi-shield-lock" style="font-size: 2.5rem; opacity: .5;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header"><i class="bi bi-clock-history"></i> Recent Activity</div>
+    <ul class="list-group list-group-flush">
+        {% for comment in recent_comments %}
+        <li class="list-group-item">
+            <strong>
+                {% if user_ids.get(comment['user']) %}
+                <a href="/profile/{{ user_ids[comment['user']] }}" class="text-decoration-none">{{ comment['user'] }}</a>
+                {% else %}
+                {{ comment['user'] }}
+                {% endif %}
+            </strong> commented on
+            <a href="/companies/{{ comment['company_id'] }}">{{ comment['company_name'] }}</a>
+            <p class="text-muted mb-0 small mt-1">{{ comment['comment']|truncate(100) }}</p>
+        </li>
+        {% else %}
+        <li class="list-group-item text-muted">No recent activity.</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

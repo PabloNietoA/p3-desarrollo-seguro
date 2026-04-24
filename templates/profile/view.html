@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}{{ profile_user['username'] }} — Profile{% endblock %}
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item active">Profile: {{ profile_user['username'] }}</li>
+    </ol>
+</nav>
+{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="bi bi-person-circle" style="font-size: 4rem; color: #6c757d;"></i>
+                <h4 class="mt-2">{{ profile_user['username'] }}</h4>
+                <span class="badge bg-primary text-capitalize">{{ profile_user['role'] }}</span>
+                {% if profile_user['company_id'] %}
+                <p class="text-muted mt-2 mb-0">Company ID: {{ profile_user['company_id'] }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-chat-dots"></i> Recent Comments</div>
+            <ul class="list-group list-group-flush">
+                {% for comment in comments %}
+                <li class="list-group-item">
+                    <a href="/companies/{{ comment['company_id'] }}">{{ comment['company_name'] }}</a>
+                    <p class="mb-0 text-muted small">{{ comment['comment']|truncate(120) }}</p>
+                </li>
+                {% else %}
+                <li class="list-group-item text-muted">No comments yet.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
