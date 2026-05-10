@@ -89,12 +89,12 @@ jobs:
           echo "Esperando a que la aplicación esté disponible..."
           sleep 15 
       
-      - name: Revisar logs del contenedor y estado
-        run: |
-          echo "Estado del contenedor:"
-          docker ps -a | grep mi-app-container
-          echo "Logs de la aplicación Flask:"
-          docker logs mi-app-container
+      # - name: Revisar logs del contenedor y estado
+      #   run: |
+      #     echo "Estado del contenedor:"
+      #     docker ps -a | grep mi-app-container
+      #     echo "Logs de la aplicación Flask:"
+      #     docker logs mi-app-container
 
       - name: Ajustar permisos del workspace para ZAP
         run: chmod -R 777 ${{ github.workspace }}
