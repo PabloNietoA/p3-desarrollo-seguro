@@ -73,6 +73,7 @@ jobs:
             
             # jq -r '.results[] | select(.extra.severity == "ERROR") | "🚨 Regla: \(.check_id)\n📁 Archivo: \(.path) (Línea: \(.start.line))\n📝 Mensaje: \(.extra.message)\n----------------------------------------------------------"' semgrep-results.json
             
+            echo "" >> $GITHUB_STEP_SUMMARY
             echo "Otros Hallazgos:" >> $GITHUB_STEP_SUMMARY
             
             echo "| Severidad | Archivo y Línea | Regla | CWE | Mensaje | Probabilidad | Impacto | Confianza |" >> $GITHUB_STEP_SUMMARY
