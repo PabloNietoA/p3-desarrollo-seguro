@@ -56,9 +56,6 @@ jobs:
         run: pip install pip-audit
 
       - name: Ejecutar SCA con pip-audit
-        # -r: analiza el archivo de requerimientos
-        # --local: ignora paquetes instalados en el sistema global (opcional)
-        # --format: puedes usar 'columns', 'json', o 'cyclonedx'
         run: pip-audit -r requirements.txt
         
   # 🔑 Secret Scanning
@@ -75,8 +72,7 @@ jobs:
   # 🕷️ DAST (Dynamic Application Security Testing)
   dast:
     runs-on: ubuntu-latest
-    # Esperamos a que los análisis estáticos pasen antes de gastar tiempo en el build
-    needs: [sast, sca, secret-scan] 
+    needs: [setup] # [sast, sca, secret-scan] 
     
     steps:
       - name: Checkout
@@ -89,8 +85,6 @@ jobs:
         run: docker run -d -p 5000:5000 --name dast-container dast-build
 
       - name: Esperar a que la aplicación inicie
-        # Es crucial dar unos segundos para que el servidor web interno de la app arranque
-        # antes de que ZAP intente atacarla.
         run: |
           echo "Esperando a que la aplicación esté disponible..."
           sleep 15 
@@ -98,11 +92,8 @@ jobs:
       - name: Ejecutar Análisis DAST con OWASP ZAP (Baseline)
         uses: zaproxy/action-baseline@v0.12.0
         with:
-          # Apuntamos al contenedor que acabamos de levantar en el runner
           target: 'http://localhost:5000'
-          # Puedes configurar esto en 'true' si quieres que el pipeline falle
-          # al encontrar vulnerabilidades
           fail_action: true
-          # Genera un reporte como issue en tu repositorio de GitHub
+          # Genera un reporte como issue
           token: ${{ secrets.GITHUB_TOKEN }}
           issue_title: 'Reporte de Vulnerabilidades DAST (ZAP)'
