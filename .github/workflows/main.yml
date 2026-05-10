@@ -48,7 +48,7 @@ jobs:
         run: pip install semgrep
 
       - name: Ejecutar SAST
-        run: semgrep --config=auto --error
+        run: semgrep ci
       
   # ANALISIS SCA
   sca:
