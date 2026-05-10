@@ -17,9 +17,10 @@ def admin_add_company():
         return render_template('errors/403.html'), 403
     if request.method == 'POST':
         company_name = request.form['company_name']
-        owner = request.form['owner']
+        owner = request.form['owner'] 
         conn = get_data_connection()
-        conn.execute("INSERT INTO companies (name, owner) VALUES ('"+ company_name+"', '"+owner+"')")
+        query = "INSERT INTO companies (name, owner) VALUES (?, ?)"
+        conn.execute(query, (company_name, owner))
         conn.commit()
         conn.close()
         flash("Company created successfully.", "success")
@@ -32,8 +33,8 @@ def delete_company():
         return render_template('errors/403.html'), 403
     company = request.form['company']
     conn = get_data_connection()
-    conn.execute("DELETE FROM companies WHERE id = "+ company)
-    conn.execute("DELETE FROM comments WHERE company_id = " + company)
+    conn.execute("DELETE FROM companies WHERE id = ?", (company,))
+    conn.execute("DELETE FROM comments WHERE company_id = ?", (company,))
     conn.commit()
     conn.close()
     flash("Company deleted.", "warning")
