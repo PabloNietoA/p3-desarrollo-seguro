@@ -38,18 +38,25 @@ jobs:
       #   with:
       #     name: semgrep-report
       #     path: semgrep-report.json
+      
+  # 🛡️ SCA (Software Composition Analysis)
   sca:
     runs-on: ubuntu-latest
     needs: setup
     steps:
-      - uses: actions/checkout@v4
-      - name: Use Node.js
-        uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Instalar Python
+        uses: actions/setup-python@v5
         with:
-          node-version: '20'
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Security Scan (npm audit)
-        run: npm audit --audit-level=high
+          python-version: '3.10'
+
+      - name: Instalar pip-audit
+        run: pip install pip-audit
+
+      - name: Ejecutar SCA con pip-audit
+        # -r: analiza el archivo de requerimientos
+        # --local: ignora paquetes instalados en el sistema global (opcional)
+        # --format: puedes usar 'columns', 'json', o 'cyclonedx'
+        run: pip-audit -r requirements.txt
