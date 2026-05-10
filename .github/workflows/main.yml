@@ -14,6 +14,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+  
+  
   # 🔍 SAST
   sast:
     runs-on: ubuntu-latest
@@ -31,13 +33,6 @@ jobs:
 
       - name: Ejecutar SAST
         run: semgrep --config=auto --severity ERROR --error
-
-      # - name: Subir reporte SAST
-      #   if: always()
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: semgrep-report
-      #     path: semgrep-report.json
       
   # 🛡️ SCA (Software Composition Analysis)
   sca:
@@ -72,7 +67,7 @@ jobs:
   # 🕷️ DAST (Dynamic Application Security Testing)
   dast:
     runs-on: ubuntu-latest
-    needs: [setup] # [sast, sca, secret-scan] 
+    needs: [sast, sca, secret-scan] 
     permissions:
       issues: write
       contents: read
@@ -97,16 +92,8 @@ jobs:
         run: chmod -R 777 ${{ github.workspace }}
 
       - name: Ejecutar Análisis DAST con OWASP ZAP (Baseline)
-        uses: zaproxy/action-baseline@v0.14.0
+        uses: zaproxy/action-baseline@v0.12.0
         with:
           target: 'http://localhost:5000'
           fail_action: false
-
-      - name: Subir Reporte DAST como Artefacto
-        uses: actions/upload-artifact@v4
-        if: always() 
-        with:
-          name: zap-report-dast # Nombre limpio sin caracteres raros
-          path: |
-            zap_report.html
 
