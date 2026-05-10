@@ -71,15 +71,13 @@ jobs:
             
             jq -r '.results[] | select(.extra.severity == "ERROR") | "| `\(.path):\(.start.line)` | **\(.check_id)** | \(.extra.message) |"' semgrep-results.json >> $GITHUB_STEP_SUMMARY
             
-            # jq -r '.results[] | select(.extra.severity == "ERROR") | "🚨 Regla: \(.check_id)\n📁 Archivo: \(.path) (Línea: \(.start.line))\n📝 Mensaje: \(.extra.message)\n----------------------------------------------------------"' semgrep-results.json
-            
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "Otros Hallazgos:" >> $GITHUB_STEP_SUMMARY
             
-            echo "| Severidad | Archivo y Línea | Regla | CWE | Mensaje | Probabilidad | Impacto | Confianza |" >> $GITHUB_STEP_SUMMARY
-            echo "| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |" >> $GITHUB_STEP_SUMMARY
+            echo "| Severidad | Archivo y Línea | CWE | Mensaje | Probabilidad | Impacto | Confianza |" >> $GITHUB_STEP_SUMMARY
+            echo "| :--- | :--- | :--- | :--- | :--- | :--- | :--- |" >> $GITHUB_STEP_SUMMARY
             
-            jq -r '.results[] | select(.extra.severity != "ERROR") | "| **\(.extra.severity)** | `\(.path):\(.start.line)` | **\(.check_id)** | \(.extra.metadata.cwe[]) | \(.extra.message) | \(.extra.metadata.likelihood) | \(.extra.metadata.impact) | \(.extra.metadata.confidence) |"' semgrep-results.json >> $GITHUB_STEP_SUMMARY
+            jq -r '.results[] | select(.extra.severity != "ERROR") | "| **\(.extra.severity)** | `\(.path):\(.start.line)` | \(.extra.metadata.cwe[]) | \(.extra.message) | \(.extra.metadata.likelihood) | \(.extra.metadata.impact) | **\(.extra.metadata.confidence)** |"' semgrep-results.json >> $GITHUB_STEP_SUMMARY
             
 
             exit 1
