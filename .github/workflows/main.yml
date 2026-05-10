@@ -60,3 +60,13 @@ jobs:
         # --local: ignora paquetes instalados en el sistema global (opcional)
         # --format: puedes usar 'columns', 'json', o 'cyclonedx'
         run: pip-audit -r requirements.txt
+        
+  # 🔑 Secret Scanning
+  secret-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ejecutar Gitleaks
+        uses: gitleaks/gitleaks-action@v2
