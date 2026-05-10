@@ -71,3 +71,38 @@ jobs:
 
       - name: Ejecutar Gitleaks
         uses: gitleaks/gitleaks-action@v2
+
+  # 🕷️ DAST (Dynamic Application Security Testing)
+  dast:
+    runs-on: ubuntu-latest
+    # Esperamos a que los análisis estáticos pasen antes de gastar tiempo en el build
+    needs: [sast, sca, secret-scan] 
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Construir imagen Docker
+        run: docker build -t dast-build .
+
+      - name: Desplegar aplicación en Docker local
+        run: docker run -d -p 5000:5000 --name dast-container dast-build
+
+      - name: Esperar a que la aplicación inicie
+        # Es crucial dar unos segundos para que el servidor web interno de la app arranque
+        # antes de que ZAP intente atacarla.
+        run: |
+          echo "Esperando a que la aplicación esté disponible..."
+          sleep 15 
+
+      - name: Ejecutar Análisis DAST con OWASP ZAP (Baseline)
+        uses: zaproxy/action-baseline@v0.12.0
+        with:
+          # Apuntamos al contenedor que acabamos de levantar en el runner
+          target: 'http://localhost:5000'
+          # Puedes configurar esto en 'true' si quieres que el pipeline falle
+          # al encontrar vulnerabilidades
+          fail_action: true
+          # Genera un reporte como issue en tu repositorio de GitHub
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue_title: 'Reporte de Vulnerabilidades DAST (ZAP)'
