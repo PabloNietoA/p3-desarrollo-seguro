@@ -62,8 +62,12 @@ jobs:
           echo "Se encontraron $BLOCKING_FINDINGS hallazgos de nivel ERROR."
           
           if [ "$BLOCKING_FINDINGS" -gt 0 ]; then
-            # El comando ::error:: hace que el error resalte en la UI de GitHub Actions
             echo "::error::Pipeline fallido: Se encontraron vulnerabilidades críticas."
+            echo "=========================================================="
+            echo "🛑 DETALLES DE LOS ERRORES CRÍTICOS:"
+            echo "=========================================================="
+            
+            jq -r '.results[] | select(.extra.severity == "ERROR") | "🚨 Regla: \(.check_id)\n📁 Archivo: \(.path) (Línea: \(.start.line))\n📝 Mensaje: \(.extra.message)\n----------------------------------------------------------"' semgrep-results.json
             exit 1
           else
             echo "No hay hallazgos bloqueantes (ERROR). El escaneo ha pasado con éxito."
