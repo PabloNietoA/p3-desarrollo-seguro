@@ -73,7 +73,11 @@ jobs:
   dast:
     runs-on: ubuntu-latest
     needs: [setup] # [sast, sca, secret-scan] 
-    
+    permissions:
+      issues: write
+      contents: read
+
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
