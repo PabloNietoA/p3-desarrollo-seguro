@@ -48,9 +48,27 @@ jobs:
         run: pip install semgrep
 
       - name: Ejecutar SAST
-        run: semgrep ci
-        env:
-          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+        run: semgrep scan --config="p/default" --json-output semgrep-results.json
+
+      - name: Analizar resultados y aplicar lógica de bloqueo
+        run: |
+          if [ ! -f semgrep-results.json ]; then
+            echo "::error::No se encontró el archivo de resultados de Semgrep."
+            exit 1
+          fi
+
+          BLOCKING_FINDINGS=$(jq '[.results[] | select(.extra.severity == "ERROR")] | length' semgrep-results.json)
+          
+          echo "Se encontraron $BLOCKING_FINDINGS hallazgos de nivel ERROR."
+          
+          if [ "$BLOCKING_FINDINGS" -gt 0 ]; then
+            # El comando ::error:: hace que el error resalte en la UI de GitHub Actions
+            echo "::error::Pipeline fallido: Se encontraron vulnerabilidades críticas."
+            exit 1
+          else
+            echo "No hay hallazgos bloqueantes (ERROR). El escaneo ha pasado con éxito."
+            exit 0
+          fi
       
   # ANALISIS SCA
   sca:
