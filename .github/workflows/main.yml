@@ -32,9 +32,23 @@ jobs:
       - name: Ejecutar SAST
         run: semgrep --config=auto --error
 
-      - name: Subir reporte SAST
-        if: always()
-        uses: actions/upload-artifact@v4
+      # - name: Subir reporte SAST
+      #   if: always()
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: semgrep-report
+      #     path: semgrep-report.json
+  sca:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
         with:
-          name: semgrep-report
-          path: semgrep-report.json
+          node-version: '20'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Security Scan (npm audit)
+        run: npm audit --audit-level=high
