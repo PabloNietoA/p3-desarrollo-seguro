@@ -1,4 +1,5 @@
 from flask import request, redirect, render_template, session, flash, url_for
+from server import app
 from db import get_data_connection, get_users_connection
 
 @app.route('/')
