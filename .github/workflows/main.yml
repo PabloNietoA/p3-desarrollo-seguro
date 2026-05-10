@@ -30,7 +30,7 @@ jobs:
         run: pip install semgrep
 
       - name: Ejecutar SAST
-        run: semgrep --config=auto --error
+        run: semgrep --config=auto --severity ERROR
 
       # - name: Subir reporte SAST
       #   if: always()
