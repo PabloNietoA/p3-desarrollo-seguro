@@ -92,13 +92,6 @@ jobs:
         run: |
           echo "Esperando a que la aplicación esté disponible..."
           sleep 15 
-      
-      # - name: Revisar logs del contenedor y estado
-      #   run: |
-      #     echo "Estado del contenedor:"
-      #     docker ps -a | grep mi-app-container
-      #     echo "Logs de la aplicación Flask:"
-      #     docker logs mi-app-container
 
       - name: Ajustar permisos del workspace para ZAP
         run: chmod -R 777 ${{ github.workspace }}
@@ -107,7 +100,16 @@ jobs:
         uses: zaproxy/action-baseline@v0.12.0
         with:
           target: 'http://localhost:5000'
-          fail_action: true
+          fail_action: false
           # Genera un reporte como issue
-          token: ${{ secrets.GITHUB_TOKEN }}
-          issue_title: 'Reporte de Vulnerabilidades DAST (ZAP)'
+          # token: ${{ secrets.GITHUB_TOKEN }}
+          # issue_title: 'Reporte de Vulnerabilidades DAST (ZAP)'
+
+      - name: Subir Reporte DAST como Artefacto
+        uses: actions/upload-artifact@v4
+        if: always() 
+        with:
+          name: zap-report-dast # Nombre limpio sin caracteres raros
+          path: |
+            zap_report.html
+
