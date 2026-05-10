@@ -29,9 +29,11 @@ def add_user():
 
     conn = get_users_connection()
     if company_id:
-        conn.execute("INSERT INTO users (username, password, role, company_id) VALUES ('"+username+"', '"+hash_password(password)+"', "+role+", "+company_id+")")
+        sql = "INSERT INTO users (username, password, role, company_id) VALUES (?, ?, ?, ?)"
+        conn.execute(sql, (username, hash_password(password), role, company_id))
     else:
-        conn.execute("INSERT INTO users (username, password, role) VALUES ('"+username+"', '"+hash_password(password)+"', "+role+")")
+        sql = "INSERT INTO users (username, password, role) VALUES (?, ?, ?)"
+        conn.execute(sql, (username, hash_password(password), role))
     conn.commit()
     conn.close()
     flash("User created successfully.", "success")
