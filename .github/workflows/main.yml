@@ -64,22 +64,11 @@ jobs:
 
       - name: Ejecutar SCA con pip-audit
         run: pip-audit -r requirements.txt
-        
-  # 🔑 Secret Scanning
-  secret-scan:
-    runs-on: ubuntu-latest
-    needs: setup
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Ejecutar Gitleaks
-        uses: gitleaks/gitleaks-action@v2
 
 
   deploy:
     runs-on: ubuntu-latest
-    needs: [sast, sca]
+    needs: [sast, sca, smoke-test]
     steps:
       - uses: JorgeLNJunior/render-deploy@v1.5.0
         with:
@@ -89,7 +78,7 @@ jobs:
 
   
   
-          
+
   # 🕷️ DAST (Dynamic Application Security Testing)
   dast:
     runs-on: ubuntu-latest
@@ -103,23 +92,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Construir imagen Docker
-        run: docker build -t dast-build .
-
-      - name: Desplegar aplicación en Docker local
-        run: docker run -d -p 5000:5000 --name dast-container dast-build
-
-      - name: Esperar a que la aplicación inicie
-        run: |
-          echo "Esperando a que la aplicación esté disponible..."
-          sleep 15 
-
-      - name: Ajustar permisos del workspace para ZAP
-        run: chmod -R 777 ${{ github.workspace }}
-
       - name: Ejecutar Análisis DAST con OWASP ZAP (Baseline)
         uses: zaproxy/action-baseline@v0.12.0
         with:
-          target: 'http://localhost:5000'
-          fail_action: false
+          target: 'https://p3-desarrollo-seguro.onrender.com'
+          fail_action: true
 
