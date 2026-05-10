@@ -1,12 +1,63 @@
-from flask import request, redirect, render_template, session, flash
+from flask import request, redirect, render_template, session, flash, url_for
+from urllib.parse import urlparse, urljoin
+
 from server import app
 from db import get_data_connection, get_users_connection
+
+
+# -------------------------
+# UTILIDAD SEGURIDAD
+# -------------------------
+def is_safe_url(target):
+    ref_url = urlparse(request.host_url)
+    test_url = urlparse(urljoin(request.host_url, target))
+    return test_url.scheme in ('http', 'https') and ref_url.netloc == test_url.netloc
+
 
 @app.route('/')
 def index():
     return redirect('/login')
 
 
+# -------------------------
+# AUTH (OPEN REDIRECT FIX)
+# -------------------------
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    next_url = request.args.get('next', '/dashboard')
+
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        conn = get_users_connection()
+
+        user = conn.execute(
+            "SELECT * FROM users WHERE username = ? AND password = ?",
+            (username, hash_password(password))
+        ).fetchone()
+
+        conn.close()
+
+        if user:
+            session['user_id'] = user['id']
+            session['username'] = user['username']
+            session['role'] = user['role']
+
+            # 🔐 FIX OPEN REDIRECT
+            if not next_url or not is_safe_url(next_url):
+                next_url = '/dashboard'
+
+            return redirect(next_url)
+
+        flash("Invalid credentials", "error")
+
+    return render_template('auth/login.html')
+
+
+# -------------------------
+# DASHBOARD
+# -------------------------
 @app.route('/dashboard')
 def dashboard():
     if 'username' not in session:
@@ -34,7 +85,6 @@ def dashboard():
 
     conn.close()
 
-    # Resolve user IDs for profile links
     user_ids = {}
     usernames = set(c['user'] for c in recent_comments)
 
@@ -61,6 +111,9 @@ def dashboard():
     )
 
 
+# -------------------------
+# COMPANIES LIST
+# -------------------------
 @app.route('/companies')
 def list_companies():
 
@@ -84,7 +137,6 @@ def list_companies():
     companies_list = []
 
     for company in companies:
-
         company_dict = dict(company)
 
         company_dict['comment_count'] = conn.execute(
@@ -103,6 +155,9 @@ def list_companies():
     )
 
 
+# -------------------------
+# COMPANY DETAIL
+# -------------------------
 @app.route('/companies/<int:company_id>', methods=['GET', 'POST'])
 def company_detail(company_id):
 
@@ -127,10 +182,7 @@ def company_detail(company_id):
         user = session.get('username')
 
         conn.execute(
-            """
-            INSERT INTO comments (company_id, user, comment)
-            VALUES (?, ?, ?)
-            """,
+            "INSERT INTO comments (company_id, user, comment) VALUES (?, ?, ?)",
             (company_id, user, comment)
         )
 
@@ -146,16 +198,13 @@ def company_detail(company_id):
     if not company:
         return render_template('errors/404.html'), 404
 
-    # Resolve user IDs for profile links
     user_ids = {}
     usernames = set(c['user'] for c in comments)
 
     if usernames:
-
         conn_u = get_users_connection()
 
         for uname in usernames:
-
             u = conn_u.execute(
                 "SELECT id FROM users WHERE username = ?",
                 (uname,)
@@ -174,6 +223,9 @@ def company_detail(company_id):
     )
 
 
+# -------------------------
+# REGISTER COMPANY
+# -------------------------
 @app.route('/companies/register', methods=['GET', 'POST'])
 def register_company():
 
@@ -184,18 +236,12 @@ def register_company():
 
         company_name = request.form['company_name'].strip()
         description = request.form['description'].strip()
-        owner = request.form.get(
-            'owner',
-            session.get('username')
-        ).strip()
+        owner = request.form.get('owner', session.get('username')).strip()
 
         conn = get_data_connection()
 
         conn.execute(
-            """
-            INSERT INTO companies (name, description, owner)
-            VALUES (?, ?, ?)
-            """,
+            "INSERT INTO companies (name, description, owner) VALUES (?, ?, ?)",
             (company_name, description, owner)
         )
 
@@ -209,6 +255,9 @@ def register_company():
     return render_template('companies/register_company.html')
 
 
+# -------------------------
+# EDIT COMPANY
+# -------------------------
 @app.route('/companies/<int:company_id>/edit', methods=['GET', 'POST'])
 def edit_company(company_id):
 
@@ -226,10 +275,7 @@ def edit_company(company_id):
         conn.close()
         return render_template('errors/404.html'), 404
 
-    if (
-        session.get('role') != 'admin'
-        and session.get('username') != company['owner']
-    ):
+    if session.get('role') != 'admin' and session.get('username') != company['owner']:
         conn.close()
         return render_template('errors/403.html'), 403
 
@@ -239,11 +285,7 @@ def edit_company(company_id):
         new_description = request.form['description'].strip()
 
         conn.execute(
-            """
-            UPDATE companies
-            SET name = ?, description = ?
-            WHERE id = ?
-            """,
+            "UPDATE companies SET name = ?, description = ? WHERE id = ?",
             (new_name, new_description, company_id)
         )
 
