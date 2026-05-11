@@ -80,7 +80,7 @@ jobs:
               echo "| Severidad | Archivo y Línea | CWE | Mensaje | Probabilidad | Impacto | Confianza |" >> $GITHUB_STEP_SUMMARY
               echo "| :--- | :--- | :--- | :--- | :--- | :--- | :--- |" >> $GITHUB_STEP_SUMMARY
               
-              jq -r '.results[] | select(.extra.severity != "ERROR") | "| **\(.extra.severity)** | `\(.path):\(.start.line)` | \(.extra.metadata.cwe[]) | \(.extra.message) | \(.extra.metadata.likelihood) | \(.extra.metadata.impact) | **\(.extra.metadata.confidence)** |"' semgrep-results.json >> $GITHUB_STEP_SUMMARY
+              jq -r '.results[] | select(.extra.severity != "ERROR") | "| **\(.extra.severity)** | `\(.path):\(.start.line)` | \(.extra.metadata.cwe.0) | \(.extra.message) | \(.extra.metadata.likelihood) | \(.extra.metadata.impact) | **\(.extra.metadata.confidence)** |"' semgrep-results.json >> $GITHUB_STEP_SUMMARY
             fi  
 
             exit 1
@@ -93,9 +93,9 @@ jobs:
               echo "| Severidad | Archivo y Línea | CWE | Mensaje | Probabilidad | Impacto | Confianza |" >> $GITHUB_STEP_SUMMARY
               echo "| :--- | :--- | :--- | :--- | :--- | :--- | :--- |" >> $GITHUB_STEP_SUMMARY
               
-              jq -r '.results[] | select(.extra.severity != "ERROR") | "| **\(.extra.severity)** | `\(.path):\(.start.line)` | \(.extra.metadata.cwe[]) | \(.extra.message) | \(.extra.metadata.likelihood) | \(.extra.metadata.impact) | **\(.extra.metadata.confidence)** |"' semgrep-results.json >> $GITHUB_STEP_SUMMARY
+              jq -r '.results[] | select(.extra.severity != "ERROR") | "| **\(.extra.severity)** | `\(.path):\(.start.line)` | \(.extra.metadata.cwe.0) | \(.extra.message) | \(.extra.metadata.likelihood) | \(.extra.metadata.impact) | **\(.extra.metadata.confidence)** |"' semgrep-results.json >> $GITHUB_STEP_SUMMARY
             fi 
-            
+
             exit 0
           fi
 
