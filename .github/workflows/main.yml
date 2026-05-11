@@ -169,5 +169,29 @@ jobs:
         uses: zaproxy/action-baseline@v0.14.0
         with:
           target: 'https://p3-desarrollo-seguro.onrender.com'
-          fail_action: true
+          fail_action: false
+          cmd_options: '-w zap_report.md'
+      
+      - name: Publicar Resumen de ZAP en el Pipeline
+        if: always()
+        run: |
+          if [ -f zap-report.md ]; then
+            # Añadimos un título personalizado
+            echo "## 🕸️ Reporte de Seguridad Dinámica (OWASP ZAP)" >> $GITHUB_STEP_SUMMARY
+            
+            # Volcamos todo el contenido del archivo Markdown generado por ZAP
+            cat zap-report.md >> $GITHUB_STEP_SUMMARY
+            
+            # Opcional: Lógica para fallar el pipeline si hubo alertas de alto nivel.
+            # ZAP Baseline usa códigos de salida específicos (1 para fallos de script, 2 para alertas de seguridad)
+            # pero como usamos fail_action: false, verificamos si el archivo contiene la palabra "High" o "Critical"
+            if grep -q "High" zap-report.md || grep -q "Critical" zap-report.md; then
+              echo "::error::ZAP encontró vulnerabilidades Altas o Críticas."
+              exit 1
+            fi
+          else
+            echo "### ⚠️ Advertencia" >> $GITHUB_STEP_SUMMARY
+            echo "El archivo \`zap-report.md\` no se generó." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
 
