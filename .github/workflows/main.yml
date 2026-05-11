@@ -58,6 +58,7 @@ jobs:
           fi
 
           BLOCKING_FINDINGS=$(jq '[.results[] | select(.extra.severity == "ERROR")] | length' semgrep-results.json)
+          OTHER_FINDINGS=$(jq '[.results[] | select(.extra.severity != "ERROR")] | length' semgrep-results.json)
           
           echo "# 🛡️ Reporte de Seguridad de Semgrep" >> $GITHUB_STEP_SUMMARY
           
@@ -71,26 +72,29 @@ jobs:
             
             jq -r '.results[] | select(.extra.severity == "ERROR") | "| `\(.path):\(.start.line)` | **\(.check_id)** | \(.extra.message) |"' semgrep-results.json >> $GITHUB_STEP_SUMMARY
             
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "### Otros Hallazgos:" >> $GITHUB_STEP_SUMMARY
-            
-            echo "| Severidad | Archivo y Línea | CWE | Mensaje | Probabilidad | Impacto | Confianza |" >> $GITHUB_STEP_SUMMARY
-            echo "| :--- | :--- | :--- | :--- | :--- | :--- | :--- |" >> $GITHUB_STEP_SUMMARY
-            
-            jq -r '.results[] | select(.extra.severity != "ERROR") | "| **\(.extra.severity)** | `\(.path):\(.start.line)` | \(.extra.metadata.cwe[]) | \(.extra.message) | \(.extra.metadata.likelihood) | \(.extra.metadata.impact) | **\(.extra.metadata.confidence)** |"' semgrep-results.json >> $GITHUB_STEP_SUMMARY
-            
+            if [ "$OTHER_FINDINGS" -gt 0 ]; then
+
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "### Otros Hallazgos:" >> $GITHUB_STEP_SUMMARY
+              
+              echo "| Severidad | Archivo y Línea | CWE | Mensaje | Probabilidad | Impacto | Confianza |" >> $GITHUB_STEP_SUMMARY
+              echo "| :--- | :--- | :--- | :--- | :--- | :--- | :--- |" >> $GITHUB_STEP_SUMMARY
+              
+              jq -r '.results[] | select(.extra.severity != "ERROR") | "| **\(.extra.severity)** | `\(.path):\(.start.line)` | \(.extra.metadata.cwe[]) | \(.extra.message) | \(.extra.metadata.likelihood) | \(.extra.metadata.impact) | **\(.extra.metadata.confidence)** |"' semgrep-results.json >> $GITHUB_STEP_SUMMARY
+            fi  
 
             exit 1
           else
-            echo "### ✅ Estado: Aprobado" >> $GITHUB_STEP_SUMMARY
-            echo "No se detectaron vulnerabilidades críticas. ¡Buen trabajo!" >> $GITHUB_STEP_SUMMARY
-            
-            echo "### Otros Hallazgos:" >> $GITHUB_STEP_SUMMARY
-            
-            echo "| Severidad | Archivo y Línea | CWE | Mensaje | Probabilidad | Impacto | Confianza |" >> $GITHUB_STEP_SUMMARY
-            echo "| :--- | :--- | :--- | :--- | :--- | :--- | :--- |" >> $GITHUB_STEP_SUMMARY
-            
-            jq -r '.results[] | select(.extra.severity != "ERROR") | "| **\(.extra.severity)** | `\(.path):\(.start.line)` | \(.extra.metadata.cwe[]) | \(.extra.message) | \(.extra.metadata.likelihood) | \(.extra.metadata.impact) | **\(.extra.metadata.confidence)** |"' semgrep-results.json >> $GITHUB_STEP_SUMMARY
+            if [ "$OTHER_FINDINGS" -gt 0 ]; then
+
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "### Otros Hallazgos:" >> $GITHUB_STEP_SUMMARY
+              
+              echo "| Severidad | Archivo y Línea | CWE | Mensaje | Probabilidad | Impacto | Confianza |" >> $GITHUB_STEP_SUMMARY
+              echo "| :--- | :--- | :--- | :--- | :--- | :--- | :--- |" >> $GITHUB_STEP_SUMMARY
+              
+              jq -r '.results[] | select(.extra.severity != "ERROR") | "| **\(.extra.severity)** | `\(.path):\(.start.line)` | \(.extra.metadata.cwe[]) | \(.extra.message) | \(.extra.metadata.likelihood) | \(.extra.metadata.impact) | **\(.extra.metadata.confidence)** |"' semgrep-results.json >> $GITHUB_STEP_SUMMARY
+            fi 
             
             exit 0
           fi
