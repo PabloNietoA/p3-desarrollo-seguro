@@ -6,7 +6,8 @@ from server import app
 def login():
     if 'username' in session:
         return redirect('/dashboard')
-    next_url = request.args.get('next', '/dashboard')
+    #next_url = request.args.get('next', '/dashboard') //OpenRedirect
+    next_url = '/dashboard'
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
