@@ -60,15 +60,13 @@ def list_companies():
 
 
 
-# -------------------------
-# COMPANY DETAIL
-# -------------------------
+@app.route('/companies/<int:company_id>', methods=['GET', 'POST'])
 def company_detail(company_id):
     if 'username' not in session:
         return redirect('/login')
     conn = get_data_connection()
-    company = conn.execute("SELECT * FROM companies WHERE id = ?", (str(company_id))).fetchone()
-    comments = conn.execute("SELECT * FROM comments WHERE company_id = ?", (str(company_id))).fetchall()
+    company = conn.execute("SELECT * FROM companies WHERE id = ?", (str(company_id),)).fetchone()
+    comments = conn.execute("SELECT * FROM comments WHERE company_id = ?", (str(company_id),)).fetchall()
     if request.method == 'POST':
         comment = request.form['comment']
         user = session.get('username')
@@ -81,6 +79,7 @@ def company_detail(company_id):
     if not company:
         return render_template('errors/404.html'), 404
 
+    # Resolve user IDs for profile links
     user_ids = {}
     usernames = set(c['user'] for c in comments)
     if usernames:

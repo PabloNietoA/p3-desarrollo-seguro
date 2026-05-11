@@ -72,7 +72,7 @@ jobs:
             jq -r '.results[] | select(.extra.severity == "ERROR") | "| `\(.path):\(.start.line)` | **\(.check_id)** | \(.extra.message) |"' semgrep-results.json >> $GITHUB_STEP_SUMMARY
             
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "Otros Hallazgos:" >> $GITHUB_STEP_SUMMARY
+            echo "### Otros Hallazgos:" >> $GITHUB_STEP_SUMMARY
             
             echo "| Severidad | Archivo y Línea | CWE | Mensaje | Probabilidad | Impacto | Confianza |" >> $GITHUB_STEP_SUMMARY
             echo "| :--- | :--- | :--- | :--- | :--- | :--- | :--- |" >> $GITHUB_STEP_SUMMARY
@@ -84,6 +84,14 @@ jobs:
           else
             echo "### ✅ Estado: Aprobado" >> $GITHUB_STEP_SUMMARY
             echo "No se detectaron vulnerabilidades críticas. ¡Buen trabajo!" >> $GITHUB_STEP_SUMMARY
+            
+            echo "### Otros Hallazgos:" >> $GITHUB_STEP_SUMMARY
+            
+            echo "| Severidad | Archivo y Línea | CWE | Mensaje | Probabilidad | Impacto | Confianza |" >> $GITHUB_STEP_SUMMARY
+            echo "| :--- | :--- | :--- | :--- | :--- | :--- | :--- |" >> $GITHUB_STEP_SUMMARY
+            
+            jq -r '.results[] | select(.extra.severity != "ERROR") | "| **\(.extra.severity)** | `\(.path):\(.start.line)` | \(.extra.metadata.cwe[]) | \(.extra.message) | \(.extra.metadata.likelihood) | \(.extra.metadata.impact) | **\(.extra.metadata.confidence)** |"' semgrep-results.json >> $GITHUB_STEP_SUMMARY
+            
             exit 0
           fi
 
